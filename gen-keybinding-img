@@ -224,7 +224,12 @@ class KeyboardPNGFactory:
         context.move_to(move_x, move_y + 20)
         context.set_font_size(18)
         if len([i for i in self.modifiers if i]):
-            context.show_text("Modifiers: " + ", ".join(self.modifiers))
+            modifiers = " + ".join(self.modifiers)
+            modifiers = modifiers.replace('mod4', 'Super')
+            modifiers = modifiers.replace('mod1', 'Alt')
+            modifiers = modifiers.replace('shift', 'Shift')
+            modifiers = modifiers.replace('control', 'Control')
+            context.show_text("Modifiers: " + modifiers)
         else:
             context.show_text("No modifiers used.")
 
