@@ -410,7 +410,7 @@ def get_kb_map(config_path=None):
 
 
 help_doc = """
-usage: gen-keybinding-img [-h] [-c CONFIGFILE] [-o OUTPUT_DIR]
+usage: gen-keybinding-img [-h] [-c CONFIGFILE] [-o OUTPUT_DIR] [-l LOGO_FILE]
 
 Qtile keybindings image generator
 
@@ -421,6 +421,8 @@ optional arguments:
                         default will be used
     -o OUTPUT_DIR, --output-dir OUTPUT_DIR
                         set directory to export all images to
+    -l LOGO_FILE, --logo LOGO_FILE
+                        set logo file to use
 """
 if __name__ == "__main__":
     config_path = None
