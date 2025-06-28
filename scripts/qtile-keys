@@ -1,0 +1,38 @@
+#!/usr/bin/python3
+
+import json
+from libqtile.confreader import Config
+
+config_path = "/home/mike/.config/qtile/config.py"
+c = Config(config_path)
+if config_path:
+    c.load()
+
+keybindings = []
+for key in c.keys:
+    keybindings.append({
+      'key': str(key.key), # .lower(),
+      'command': key.commands[0].name + " " + key.commands[0].args[0] if len(key.commands[0].args) and isinstance(key.commands[0].args[0], str) else key.commands[0].name,
+      'description': key.desc,
+      'modifiers': "-".join(key.modifiers),
+      'scope': key.commands[0].selectors[0][0] if len(key.commands[0].selectors) else None,
+    })
+
+for mouse in c.mouse:
+    try:
+        description = mouse.desc
+    except:
+        description = mouse.commands[0].name + " " + mouse.commands[0].args[0] if len(mouse.commands[0].args) and isinstance(mouse.commands[0].args[0], str) else mouse.commands[0].name
+        description = description.replace("set_position_floating", "Move Window")
+        description = description.replace("set_size_floating", "Resize Window")
+        description = description.replace("bring_to_front", "Bring Window to Front")
+        description = description.replace("_", " ")
+    keybindings.append({
+        'key': str(mouse.button), # .lower(),
+        'command': mouse.commands[0].name + " " + mouse.commands[0].args[0] if len(mouse.commands[0].args) and isinstance(mouse.commands[0].args[0], str) else mouse.commands[0].name,
+        'description': description,
+        'modifiers': "-".join(mouse.modifiers),
+        'scope': mouse.commands[0].selectors[0][0] if len(mouse.commands[0].selectors) else None
+    })
+
+print(json.dumps(keybindings))

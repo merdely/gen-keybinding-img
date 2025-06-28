@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+
+import json
+import re
+import subprocess
+
+result = subprocess.run(['hyprctl', '--instance', '0', '-j', 'binds'],
+                        capture_output=True, text=True, check=True)
+
+modmasks = {
+    0: "",
+    1: "shift",
+    4: "control",
+    5: "control-shift",
+    8: "mod1",
+    9: "mod1-shift",
+    12: "control-mod1",
+    13: "control-mod1-shift",
+    64: "mod4",
+    65: "mod4-shift",
+    68: "mod4-control",
+    69: "mod4-control-shift",
+    72: "mod4-mod1",
+    73: "mod4-mod1-shift",
+    76: "mod4-control-mod1",
+    77: "mod4-control-mod1-shift"
+}
+binds = json.loads(result.stdout)
+
+keybindings = []
+for bind in binds:
+    scope = "other"
+    if "monitor" in bind['dispatcher']:
+        scope = "monitor"
+    elif "workspace" in bind['dispatcher']:
+        scope = "workspace"
+    elif "window" in bind['dispatcher'] or "togglesplit" in bind['dispatcher'] or "togglefloating" in bind['dispatcher'] or "killactive" in bind['dispatcher'] or "fullscreen" in bind['dispatcher'] or (bind['dispatcher'] == "mouse" and "window" in bind['arg']):
+        scope = "window"
+    elif "cyclenext" in bind['dispatcher'] or "movefocus" in bind['dispatcher'] or "pseudo" in bind['dispatcher']:
+        scope = "layout"
+    elif bind['dispatcher'] == "exec":
+        scope = "other"
+    if re.match(r'^[A-Z]$', bind['key']):
+        bind['key'] = bind['key'].lower()
+    elif bind['key'] == "mouse:272":
+        bind['key'] = "Button1"
+    elif bind['key'] == "mouse:274":
+        bind['key'] = "Button2"
+    elif bind['key'] == "mouse:273":
+        bind['key'] = "Button3"
+    keybindings.append({
+        'key': str(bind['key']),
+        'command': f"{bind['dispatcher']} {bind['arg']}" if bind['arg'] else bind['dispatcher'],
+        'description': bind['description'],
+        'modifiers': modmasks[bind['modmask']],
+        'scope': scope
+    })
+    #print(bind)
+    #sys.exit(0)
+
+#for key in c.keys:
+#    keybindings.append({
+#      'key': str(key.key).lower(),
+#      'command': key.commands[0].name + " " + key.commands[0].args[0] if len(key.commands[0].args) and isinstance(key.commands[0].args[0], str) else key.commands[0].name,
+#      'description': key.desc,
+#      'modifiers': "-".join(key.modifiers),
+#      'scope': key.commands[0].selectors[0][0] if len(key.commands[0].selectors) else None,
+#    })
+
+print(json.dumps(keybindings))

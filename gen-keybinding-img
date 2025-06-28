@@ -9,6 +9,7 @@ import getopt
 import os
 import sys
 from PIL import Image
+from types import SimpleNamespace
 
 import cairocffi as cairo
 from cairocffi import ImageSurface
@@ -26,15 +27,222 @@ COMMAND_X = 10
 LEGEND = ["Modifiers", "Layout", "Screen", "Group", "Window", "Other"]
 
 CUSTOM_KEYS = {
-    "Backspace": 2,
-    "Tab": 1.5,
+    "backspace": 2,
+    "tab": 1.5,
     "\\": 1.5,
-    "Return": 2.45,
+    "return": 2.45,
     "shift": 2,
     "space": 5,
     "Modifiers": 1.1,
+    "FN_KEYS": 1.15,
 }
 
+KEY_MAP = {
+    "grave": "`",
+    "semicolon": ";",
+    "slash": "/",
+    "backslash": "\\",
+    "comma": ",",
+    "period": ".",
+    "bracketleft": "[",
+    "bracketright": "]",
+    "quote": "'",
+    "apostrophe": "'",
+    "minus": "-",
+    "equals": "=",
+    "equal": "=",
+}
+
+NAME_MAP = {
+    "tab": "Tab",
+    "backspace": "Backspace",
+    "return": "Return",
+    "shift": "Shift",
+    "control": "Control",
+    "space": "Space",
+    "print": "Print",
+    "delete": "Del",
+    "mod1": "Alt",
+    "mod4": "Super",
+    "up": "↑",
+    "left": "←",
+    "down": "↓",
+    "right": "→",
+    "button1": "Button1",
+    "button2": "Button2",
+    "button3": "Button3",
+    "xf86monbrightnessup": "MonBright ↑",
+    "xf86monbrightnessdown": "MonBright ↓",
+    "xf86kbdlightonoff": "KeyLite",
+    "xf86kbdbrightnessup": "KeyBright ↑",
+    "xf86kbdbrightnessdown": "KeyBright ↓",
+    "xf86standby": "Standby",
+    "xf86audiolowervolume": "Volume ↓",
+    "xf86audiomute": "Mute",
+    "xf86audioraisevolume": "Volume ↑",
+    "xf86audioplay": "Play Media",
+    "xf86audiostop": "Stop Media",
+    "xf86audioprev": "Prev Media",
+    "xf86audionext": "Next Media",
+    "xf86homepage": "Web Home",
+    "xf86mail": "Mail",
+    "xf86start": "Start",
+    "xf86search": "Search",
+    "xf86audiorecord": "Record",
+    "xf86calculator": "Calc",
+    "xf86memo": "Memo",
+    "xf86todolist": "Todo",
+    "xf86calendar": "Calendar",
+    "xf86powerdown": "Shutdown",
+    "xf86contrastadjust": "Contrast",
+    "xf86rockerup": "Rocker ↑",
+    "xf86rockerdown": "Rocker ↓",
+    "xf86rockerenter": "Rocker",
+    "xf86back": "Back",
+    "xf86forward": "Forward",
+    "xf86stop": "Stop",
+    "xf86refresh": "Refresh",
+    "xf86poweroff": "Shutdown",
+    "xf86wakeup": "WakeUp",
+    "xf86eject": "Eject",
+    "xf86screensaver": "Screensaver",
+    "xf86www": "Web",
+    "xf86sleep": "Sleep",
+    "xf86favorites": "Bookmarks",
+    "xf86audiopause": "Pause Audio",
+    "xf86audiomedia": "Audio Media",
+    "xf86mycomputer": "My Computer",
+    "xf86shop": "Shop",
+    "xf86history": "History",
+    "xf86openurl": "OpenURL",
+    "xf86addfavorite": "Add Bookmark",
+    "xf86hotlinks": "Bookmarks",
+    "xf86brightnessadjust": "Brightness",
+    "xf86finance": "Finance",
+    "xf86launch0": "Launch 1",
+    "xf86launch1": "Launch 2",
+    "xf86launch2": "Launch 3",
+    "xf86launch3": "Launch 4",
+    "xf86launch4": "Launch 5",
+    "xf86launch5": "Launch 6",
+    "xf86launch6": "Launch 7",
+    "xf86launch7": "Launch 8",
+    "xf86launch8": "Launch 9",
+    "xf86launch9": "Launch 10",
+    "xf86launcha": "Launch 11",
+    "xf86launchb": "Launch 12",
+    "xf86launchc": "Launch 13",
+    "xf86launchd": "Launch 14",
+    "xf86launche": "Launch 15",
+    "xf86launchf": "Launch 16",
+    "xf86applicationleft": "Prev App",
+    "xf86applicationright": "Next App",
+    "xf86book": "Book",
+    "xf86cd": "CD",
+    "xf86calculater": "Calc",
+    "xf86clear": "Clear",
+    "xf86close": "Close",
+    "xf86copy": "Copy",
+    "xf86cut": "Cut",
+    "xf86display": "Display",
+    "xf86documents": "Documents",
+    "xf86excel": "Excel",
+    "xf86explorer": "Explorer",
+    "xf86game": "Game",
+    "xf86go": "Go",
+    "xf86itouch": "iTouch",
+    "xf86logoff": "Logoff",
+    "xf86market": "Market",
+    "xf86meeting": "Meeting",
+    "xf86menukb": "Menu KB",
+    "xf86menupb": "Menu PB",
+    "xf86mysites": "MySites",
+    "xf86new": "New",
+    "xf86news": "News",
+    "xf86officehome": "Office Home",
+    "xf86open": "Open",
+    "xf86option": "Option",
+    "xf86paste": "Paste",
+    "xf86phone": "Phone",
+    "xf86q": "Q",
+    "xf86reply": "Reply",
+    "xf86reload": "Reload",
+    "xf86rotatewindows": "RotateWindows",
+    "xf86rotationpb": "Rotation PB",
+    "xf86rotationkb": "Rotation KB",
+    "xf86save": "Save",
+    "xf86scrollup": "ScrollUp",
+    "xf86scrolldown": "ScrollDown",
+    "xf86scrollclick": "Scroll Click",
+    "xf86send": "Send",
+    "xf86spell": "Spell",
+    "xf86splitscreen": "Split Screen",
+    "xf86support": "Support",
+    "xf86taskpane": "Task Pane",
+    "xf86terminal": "Terminal",
+    "xf86tools": "Tools",
+    "xf86travel": "Travel",
+    "xf86userpb": "User PB",
+    "xf86user1kb": "User1 KB",
+    "xf86user2kb": "User2 KB",
+    "xf86video": "Video",
+    "xf86wheelbutton": "Wheel Button",
+    "xf86word": "Word",
+    "xf86xfer": "Xfer",
+    "xf86zoomin": "Zoom ↑",
+    "xf86zoomout": "Zoom ↓",
+    "xf86away": "Away",
+    "xf86messenger": "Messenger",
+    "xf86webcam": "WebCam",
+    "xf86mailforward": "Mail Forward",
+    "xf86pictures": "Pictures",
+    "xf86music": "Music",
+    "xf86battery": "Battery",
+    "xf86bluetooth": "Bluetooth",
+    "xf86wlan": "WLAN",
+    "xf86uwb": "UWB",
+    "xf86audioforward": "Audio Fwd",
+    "xf86audiorepeat": "Audio Repeat",
+    "xf86audiorandomplay": "Audio Random",
+    "xf86subtitle": "Subtitle",
+    "xf86audiocycletrack": "Audio Cycle",
+    "xf86cycleangle": "Cycle Angle",
+    "xf86frameback": "Prev Frame",
+    "xf86frameforward": "Next Frame",
+    "xf86time": "Time",
+    "xf86select": "Select",
+    "xf86view": "View",
+    "xf86topmenu": "Top Menu",
+    "xf86red": "Red",
+    "xf86green": "Green",
+    "xf86yellow": "Yellow",
+    "xf86blue": "Blue",
+    "xf86suspend": "Suspend",
+    "xf86hibernate": "Hibernate",
+    "xf86touchpadtoggle": "Toggle Touchpad",
+    "xf86touchpadon": "Touchpad On",
+    "xf86touchpadoff": "Touchpad Off",
+    "xf86audiomicmute": "Mic Mute",
+    "xf86keyboard": "Keyboard",
+    "xf86switch_vt_1": "VT 1",
+    "xf86switch_vt_2": "VT 2",
+    "xf86switch_vt_3": "VT 3",
+    "xf86switch_vt_4": "VT 4",
+    "xf86switch_vt_5": "VT 5",
+    "xf86switch_vt_6": "VT 6",
+    "xf86switch_vt_7": "VT 7",
+    "xf86switch_vt_8": "VT 8",
+    "xf86switch_vt_9": "VT 9",
+    "xf86switch_vt_10": "VT 10",
+    "xf86switch_vt_11": "VT 11",
+    "xf86switch_vt_12": "VT 12",
+    "xf86ungrab": "Ungrab",
+    "xf86cleargrab": "Clear Grab",
+    "xf86next_vmode": "Next VMode",
+    "xf86prev_vmode": "Prev VMode",
+    "xf86logwindowtree": "Log Win Tree",
+    "xf86loggrabinfo": "Log Grab Info"
+}
 
 class Button:
     def __init__(self, key, x, y, width, height):
@@ -127,10 +335,10 @@ class KeyboardPNGFactory:
         for c in "`1234567890-=":
             key_pos[c] = pos.get_pos(c)
 
-        key_pos["Backspace"] = pos.get_pos("Backspace")
+        key_pos["backspace"] = pos.get_pos("backspace")
         pos.next_row()
 
-        key_pos["Tab"] = pos.get_pos("Tab")
+        key_pos["tab"] = pos.get_pos("tab")
         for c in "qwertyuiop[]\\":
             key_pos[c] = pos.get_pos(c)
         pos.next_row()
@@ -138,15 +346,14 @@ class KeyboardPNGFactory:
         pos.skip_x(1.6)
         for c in "asdfghjkl;'":
             key_pos[c] = pos.get_pos(c)
-        key_pos["Return"] = pos.get_pos("Return")
+        key_pos["return"] = pos.get_pos("return")
         pos.next_row()
 
         key_pos["shift"] = pos.get_pos("shift")
-        for c in "zxcvbnm":
+        for c in "zxcvbnm,./":
             key_pos[c] = pos.get_pos(c)
-        key_pos["period"] = pos.get_pos("period")
-        key_pos["comma"] = pos.get_pos("comma")
-        key_pos["/"] = pos.get_pos("/")
+        pos.skip_x(0.81)
+        key_pos["up"] = pos.get_pos("up")
         pos.next_row()
 
         key_pos["control"] = pos.get_pos("control")
@@ -154,29 +361,26 @@ class KeyboardPNGFactory:
         key_pos["mod4"] = pos.get_pos("mod4")
         key_pos["mod1"] = pos.get_pos("mod1")
         key_pos["space"] = pos.get_pos("space")
-        key_pos["Print"] = pos.get_pos("Print")
-        key_pos["Delete"] = pos.get_pos("Delete")
-        pos.skip_x(3)
-        key_pos["Up"] = pos.get_pos("Up")
+        key_pos["print"] = pos.get_pos("print")
+        key_pos["delete"] = pos.get_pos("delete")
+        pos.skip_x(1)
+        key_pos["left"] = pos.get_pos("left")
+        key_pos["down"] = pos.get_pos("down")
+        key_pos["right"] = pos.get_pos("right")
 
         pos.next_row()
-        pos.skip_x(12.33)
-        key_pos["Left"] = pos.get_pos("Left")
-        key_pos["Down"] = pos.get_pos("Down")
-        key_pos["Right"] = pos.get_pos("Right")
-
-        pos.next_row()
-
-        for legend in LEGEND:
-            key_pos[legend] = pos.get_pos(legend)
-
-        pos.skip_x(5)
-        key_pos["Button1"] = pos.get_pos("Button1")
-        key_pos["Button2"] = pos.get_pos("Button2")
-        key_pos["Button3"] = pos.get_pos("Button3")
 
         pos.next_row()
         key_pos["FN_KEYS"] = pos.get_pos("FN_KEYS")
+
+        pos.skip_x(11.23)
+        key_pos["button1"] = pos.get_pos("button1")
+        key_pos["button2"] = pos.get_pos("button2")
+        key_pos["button3"] = pos.get_pos("button3")
+
+        pos.next_row()
+        for legend in LEGEND:
+            key_pos[legend] = pos.get_pos(legend)
 
         return key_pos
 
@@ -225,10 +429,10 @@ class KeyboardPNGFactory:
         context.set_font_size(18)
         if len([i for i in self.modifiers if i]):
             modifiers = " + ".join(self.modifiers)
-            modifiers = modifiers.replace('mod4', 'Super')
-            modifiers = modifiers.replace('mod1', 'Alt')
-            modifiers = modifiers.replace('shift', 'Shift')
-            modifiers = modifiers.replace('control', 'Control')
+            modifiers = modifiers.replace('mod4', NAME_MAP['mod4'])
+            modifiers = modifiers.replace('mod1', NAME_MAP['mod1'])
+            modifiers = modifiers.replace('shift', NAME_MAP['shift'])
+            modifiers = modifiers.replace('control', NAME_MAP['control'])
             context.show_text("Modifiers: " + modifiers)
         else:
             context.show_text("No modifiers used.")
@@ -246,18 +450,18 @@ class KeyboardPNGFactory:
             x = fn_pos.x
             for i in fn:
                 self.draw_button(context, i.key, x, fn_pos.y, fn_pos.width, fn_pos.height)
-                x += Pos.GAP + Pos.WIDTH
+                x += Pos.GAP + 12 + Pos.WIDTH
 
         # draw mouse base
-        context.rectangle(830, 660, 244, 90)
+        context.rectangle(996, 660, 244, 90)
         if dark_mode == 1:
             context.set_source_rgb(1, 1, 1)
         else:
             context.set_source_rgb(0, 0, 0)
         context.stroke()
         context.set_font_size(28)
-        context.move_to(900, 720)
-        context.show_text("MOUSE")
+        context.move_to(1066, 720)
+        context.show_text("Mouse")
 
         surface.write_to_png(filename)
 
@@ -303,18 +507,15 @@ class KeyboardPNGFactory:
         context.stroke()
 
         if fn:
-            key = key[4:]
             context.set_font_size(10)
         else:
             context.set_font_size(14)
 
         context.move_to(x + BUTTON_NAME_X, y + BUTTON_NAME_Y)
         key_text = key
-        key_text = key_text.replace("mod1", "Alt")
-        key_text = key_text.replace("control", "Control")
-        key_text = key_text.replace("shift", "Shift")
-        key_text = key_text.replace("mod4", "Super")
-        context.show_text(self.translate(key_text))
+        if key_text.lower() in NAME_MAP.keys():
+            key_text = NAME_MAP[key_text.lower()]
+        context.show_text(key_text)
 
     def show_multiline(self, context, x, y, key):
         """Cairo doesn't support multiline. Added with word wrapping."""
@@ -357,131 +558,40 @@ class KeyboardPNGFactory:
         else:
             self.rgb_violet(context)
 
-    def translate(self, text):
-        dictionary = {
-            #"period": ",",
-            #"comma": ".",
-            "Left": "←",
-            "Down": "↓",
-            "Right": "→",
-            "Up": "↑",
-            "AudioRaiseVolume": "Volume up",
-            "AudioLowerVolume": "Volume down",
-            "AudioMute": "Audio mute",
-            "AudioMicMute": "Mic mute",
-            "MonBrightnessUp": "Brightness up",
-            "MonBrightnessDown": "Brightness down",
-        }
+def get_kb_map(command):
+    import json
+    import subprocess
 
-        if text not in dictionary:
-            return text
-
-        return dictionary[text]
-
-
-class KInfo:
-    NAME_MAP = {
-        "togroup": "to group",
-        "toscreen": "to screen",
-    }
-
-    KEY_MAP = {
-        "grave": "`",
-        "semicolon": ";",
-        "slash": "/",
-        "backslash": "\\",
-        #"comma": ",",
-        #"period": ".",
-        "bracketleft": "[",
-        "bracketright": "]",
-        "quote": "'",
-        "apostrophe": "'",
-        "minus": "-",
-        "equals": "=",
-        "equal": "=",
-    }
-
-    def __init__(self, key):
-        if str(key.key).lower() in self.KEY_MAP:
-            self.key = self.KEY_MAP[key.key]
-        else:
-            self.key = key.key
-        self.command = self.get_command(key)
-        self.scope = self.get_scope(key)
-
-    def get_command(self, key):
-        if hasattr(key, "desc") and key.desc:
-            return key.desc
-
-        cmd = key.commands[0]
-        command = cmd.name
-        if command in self.NAME_MAP:
-            command = self.NAME_MAP[command]
-
-        command = command.replace("_", " ")
-
-        if len(cmd.args):
-            if isinstance(cmd.args[0], str):
-                command += " " + cmd.args[0]
-
-        return command
-
-    def get_scope(self, key):
-        selectors = key.commands[0].selectors
-        if len(selectors):
-            return selectors[0][0]
-
-
-class MInfo(KInfo):
-    def __init__(self, mouse):
-        self.key = mouse.button
-        self.command = self.get_command(mouse)
-        self.scope = self.get_scope(mouse)
-
-
-def get_kb_map(config_path=None):
-    try:
-        from libqtile.confreader import Config
-    except ImportError:
-        print("Error: Required library 'libqtile' not found.")
-        print("Install qtile using your system package manager or with: pip install qtile")
-        sys.exit(1)
-
-    c = Config(config_path)
-    if config_path:
-        c.load()
-
+    result = subprocess.run(command.split(" "), capture_output=True, text=True, check=True)
+    bindlist = json.loads(result.stdout)
     kb_map = {}
-    for key in c.keys:
-        mod = "-".join(key.modifiers)
+
+    for binding in bindlist:
+        mod = binding['modifiers']
         if mod not in kb_map:
             kb_map[mod] = {}
 
-        info = KInfo(key)
-        kb_map[mod][info.key] = info
-
-    for mouse in c.mouse:
-        mod = "-".join(mouse.modifiers)
-        if mod not in kb_map:
-            kb_map[mod] = {}
-
-        info = MInfo(mouse)
-        kb_map[mod][info.key] = info
+        key = str(binding['key'].lower())
+        if key in KEY_MAP.keys():
+            key = KEY_MAP[key]
+        data = { 'command': binding['description'], 'key': key, 'scope': binding['scope'] }
+        kb_map[mod][data['key']] = SimpleNamespace(**data)
 
     return kb_map
 
 
 help_doc = """
-usage: gen-keybinding-img [-h] [-d] [-c CONFIGFILE] [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
+usage: gen-keybinding-img [-h] [-d] [-c COMMAND] [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
 
 Keybindings image generator
 
 optional arguments:
     -h, --help          show this help message and exit
     -d, --dark          create dark mode images
-    -c CONFIGFILE, --config CONFIGFILE
-                        use specified configuration file. If no presented
-                        default will be used
+    -c COMMAND, --config COMMAND
+                        use specified command to get keybindings
+                        output must be in json with the following fields:
+                            key, command, description, modifiers (e.g. "mod4-control-shift"), scope
     -o OUTPUT_DIR, --output-dir OUTPUT_DIR
                         set directory to export all images to
     -l LOGO_FILE, --logo LOGO_FILE
@@ -490,13 +600,13 @@ optional arguments:
                         set application title for keybindings
 """
 if __name__ == "__main__":
-    config_path = None
+    keys_command = None
     output_dir = ""
     logo_img = ""
     app_title = ""
     dark_mode = 0
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdc:o:l:t:", ["help=", "dark=", "config=", "output-dir=", "logo=", "title="])
+        opts, args = getopt.getopt(sys.argv[1:], "hdc:o:l:t:", ["help=", "dark=", "command=", "output-dir=", "logo=", "title="])
 
     except getopt.GetoptError:
         print(help_doc)
@@ -508,8 +618,8 @@ if __name__ == "__main__":
             sys.exit()
         elif opt in ("-d", "--dark"):
             dark_mode = 1
-        elif opt in ("-c", "--config"):
-            config_path = arg
+        elif opt in ("-c", "--command"):
+            keys_command = arg
         elif opt in ("-o", "--output-dir"):
             output_dir = arg
         elif opt in ("-l", "--logo"):
@@ -517,12 +627,21 @@ if __name__ == "__main__":
         elif opt in ("-t", "--title"):
             app_title = arg
 
-    kb_map = get_kb_map(config_path)
+    if not keys_command:
+        print("Error: Command must be specified with -c")
+        print(help_doc)
+        sys.exit(2)
+
+    kb_map = get_kb_map(keys_command)
     for modifier, keys in kb_map.items():
         if not modifier:
             filename = "no_modifier.png"
         else:
-            filename = f"{modifier}.png"
+            fname = modifier.replace('mod4', NAME_MAP['mod4'])
+            fname = fname.replace('mod1', NAME_MAP['mod1'])
+            fname = fname.replace('shift', NAME_MAP['shift'])
+            fname = fname.replace('control', NAME_MAP['control'])
+            filename = f"{fname}.png"
 
         output_file = os.path.abspath(os.path.join(output_dir, filename))
         f = KeyboardPNGFactory(modifier, keys)
