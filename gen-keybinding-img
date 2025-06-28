@@ -372,7 +372,12 @@ class MInfo(KInfo):
 
 
 def get_kb_map(config_path=None):
-    from libqtile.confreader import Config
+    try:
+        from libqtile.confreader import Config
+    except ImportError:
+        print("Error: Required library 'libqtile' not found.")
+        print("Install qtile using your system package manager or with: pip install qtile")
+        sys.exit(1)
 
     c = Config(config_path)
     if config_path:
