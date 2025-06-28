@@ -156,7 +156,9 @@ class KeyboardPNGFactory:
         return key_pos
 
     def add_logo(self, context):
-        logo_img = os.path.abspath(os.path.join(this_dir, "..", "logo.png"))
+        if not os.path.exists(logo_img):
+            print(f"Error: Logo file '{logo_img}' does not exist.")
+            sys.exit(1)
 
         context.save()
         context.scale(0.5)
@@ -172,13 +174,17 @@ class KeyboardPNGFactory:
             context.set_source_rgb(1, 1, 1)
             context.paint()
 
-        self.add_logo(context)
+        move_x = 16
+        move_y = 80
+        if logo_img:
+            self.add_logo(context)
+            move_x += 194
 
-        context.move_to(210, 80)
+        context.move_to(move_x, move_y)
         context.set_font_size(28)
         context.show_text("Keybindings for Qtile")
 
-        context.move_to(210, 100)
+        context.move_to(move_x, move_y + 20)
         context.set_font_size(18)
         if len([i for i in self.modifiers if i]):
             context.show_text("Modifiers: " + ", ".join(self.modifiers))
@@ -419,8 +425,9 @@ optional arguments:
 if __name__ == "__main__":
     config_path = None
     output_dir = ""
+    logo_img = ""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:o:", ["help=", "config=", "output-dir="])
+        opts, args = getopt.getopt(sys.argv[1:], "hc:o:l:", ["help=", "config=", "output-dir=", "logo="])
 
     except getopt.GetoptError:
         print(help_doc)
@@ -434,6 +441,8 @@ if __name__ == "__main__":
             config_path = arg
         elif opt in ("-o", "--output-dir"):
             output_dir = arg
+        elif opt in ("-l", "--logo"):
+            logo_img = arg
 
     kb_map = get_kb_map(config_path)
     for modifier, keys in kb_map.items():
