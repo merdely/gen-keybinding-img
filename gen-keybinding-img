@@ -23,7 +23,7 @@ BUTTON_NAME_X = 10
 COMMAND_Y = 20
 COMMAND_X = 10
 
-LEGEND = ["modifiers", "layout", "group", "window", "other"]
+LEGEND = ["Modifiers", "Layout", "Group", "Window", "Other"]
 
 CUSTOM_KEYS = {
     "Backspace": 2,
@@ -133,6 +133,7 @@ class KeyboardPNGFactory:
         key_pos["mod1"] = pos.get_pos("mod1")
         key_pos["space"] = pos.get_pos("space")
         key_pos["Print"] = pos.get_pos("Print")
+        key_pos["Delete"] = pos.get_pos("Delete")
         pos.skip_x(3)
         key_pos["Up"] = pos.get_pos("Up")
 
@@ -228,13 +229,13 @@ class KeyboardPNGFactory:
             fn = True
 
         if key in LEGEND:
-            if key == "modifiers":
+            if key == "Modifiers":
                 self.rgb_red(context)
-            elif key == "group":
+            elif key == "Group":
                 self.rgb_green(context)
-            elif key == "layout":
+            elif key == "Layout":
                 self.rgb_cyan(context)
-            elif key == "window":
+            elif key == "Window":
                 self.rgb_yellow(context)
             else:
                 self.rgb_violet(context)
@@ -264,8 +265,15 @@ class KeyboardPNGFactory:
         else:
             context.set_font_size(14)
 
+        if key == "Modifiers":
+            x -= 5
         context.move_to(x + BUTTON_NAME_X, y + BUTTON_NAME_Y)
-        context.show_text(self.translate(key))
+        key_text = key
+        key_text = key_text.replace("mod1", "Alt")
+        key_text = key_text.replace("control", "Control")
+        key_text = key_text.replace("shift", "Shift")
+        key_text = key_text.replace("mod4", "Super")
+        context.show_text(self.translate(key_text))
 
     def show_multiline(self, context, x, y, key):
         """Cairo doesn't support multiline. Added with word wrapping."""
