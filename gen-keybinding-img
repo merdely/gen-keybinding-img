@@ -23,7 +23,7 @@ BUTTON_NAME_X = 10
 COMMAND_Y = 20
 COMMAND_X = 10
 
-LEGEND = ["Modifiers", "Layout", "Group", "Window", "Other"]
+LEGEND = ["Modifiers", "Layout", "Screen", "Group", "Window", "Other"]
 
 CUSTOM_KEYS = {
     "Backspace": 2,
@@ -32,6 +32,7 @@ CUSTOM_KEYS = {
     "Return": 2.45,
     "shift": 2,
     "space": 5,
+    "Modifiers": 1.1,
 }
 
 
@@ -88,6 +89,12 @@ class KeyboardPNGFactory:
             context.set_source_rgb(0.5431372549, 0.0725490196, 0.0725490196)
         else:
             context.set_source_rgb(0.8431372549, 0.3725490196, 0.3725490196)
+
+    def rgb_grey(self, context):
+        if dark_mode == 1:
+            context.set_source_rgb(0.3862745098, 0.3862745098, 0.3862745098)
+        else:
+            context.set_source_rgb(0.6862745098, 0.6862745098, 0.6862745098)
 
     def rgb_green(self, context):
         if dark_mode == 1:
@@ -263,6 +270,8 @@ class KeyboardPNGFactory:
                 self.rgb_cyan(context)
             elif key == "Window":
                 self.rgb_yellow(context)
+            elif key == "Screen":
+                self.rgb_grey(context)
             else:
                 self.rgb_violet(context)
             context.rectangle(x, y, width, height)
@@ -294,8 +303,6 @@ class KeyboardPNGFactory:
         else:
             context.set_font_size(14)
 
-        if key == "Modifiers":
-            x -= 5
         context.move_to(x + BUTTON_NAME_X, y + BUTTON_NAME_Y)
         key_text = key
         key_text = key_text.replace("mod1", "Alt")
@@ -340,6 +347,8 @@ class KeyboardPNGFactory:
             self.rgb_cyan(context)
         elif key.scope == "window":
             self.rgb_yellow(context)
+        elif key.scope == "screen":
+            self.rgb_grey(context)
         else:
             self.rgb_violet(context)
 
@@ -381,12 +390,14 @@ class KInfo:
         "bracketleft": "[",
         "bracketright": "]",
         "quote": "'",
+        "apostrophe": "'",
         "minus": "-",
         "equals": "=",
+        "equal": "=",
     }
 
     def __init__(self, key):
-        if key.key in self.KEY_MAP:
+        if str(key.key).lower() in self.KEY_MAP:
             self.key = self.KEY_MAP[key.key]
         else:
             self.key = key.key
