@@ -345,8 +345,8 @@ class KeyboardPNGFactory:
 
     def translate(self, text):
         dictionary = {
-            "period": ",",
-            "comma": ".",
+            #"period": ",",
+            #"comma": ".",
             "Left": "←",
             "Down": "↓",
             "Right": "→",
@@ -376,8 +376,8 @@ class KInfo:
         "semicolon": ";",
         "slash": "/",
         "backslash": "\\",
-        "comma": ",",
-        "period": ".",
+        #"comma": ",",
+        #"period": ".",
         "bracketleft": "[",
         "bracketright": "]",
         "quote": "'",
