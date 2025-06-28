@@ -32,7 +32,7 @@ CUSTOM_KEYS = {
     "\\": 1.5,
     "return": 2.45,
     "shift": 2,
-    "space": 5,
+    "space": 3,
     "Modifiers": 1.1,
     "FN_KEYS": 1.15,
 }
@@ -62,6 +62,13 @@ NAME_MAP = {
     "space": "Space",
     "print": "Print",
     "delete": "Del",
+    "home": "Home",
+    "end": "End",
+    "pgup": "PgUp",
+    "pageup": "PgUp",
+    "pgdn": "PgDn",
+    "pgdown": "PgDn",
+    "pagedown": "PgDn",
     "mod1": "Alt",
     "mod4": "Super",
     "up": "↑",
@@ -352,35 +359,43 @@ class KeyboardPNGFactory:
         key_pos["shift"] = pos.get_pos("shift")
         for c in "zxcvbnm,./":
             key_pos[c] = pos.get_pos(c)
-        pos.skip_x(0.81)
+        pos.skip_x(0.94)
         key_pos["up"] = pos.get_pos("up")
         pos.next_row()
 
         key_pos["control"] = pos.get_pos("control")
-        pos.skip_x()
         key_pos["mod4"] = pos.get_pos("mod4")
         key_pos["mod1"] = pos.get_pos("mod1")
         key_pos["space"] = pos.get_pos("space")
         key_pos["print"] = pos.get_pos("print")
         key_pos["delete"] = pos.get_pos("delete")
-        pos.skip_x(1)
+        key_pos["home"] = pos.get_pos("home")
+        key_pos["end"] = pos.get_pos("end")
+        key_pos["pgup"] = pos.get_pos("pgup")
+        key_pos["pgdn"] = pos.get_pos("pgdn")
+        #pos.skip_x(1)
         key_pos["left"] = pos.get_pos("left")
         key_pos["down"] = pos.get_pos("down")
         key_pos["right"] = pos.get_pos("right")
 
         pos.next_row()
+        #pos.skip_x(12.58)
+        #key_pos["button4"] = pos.get_pos("button4")
+        #key_pos["button5"] = pos.get_pos("button5")
+        #key_pos["button6"] = pos.get_pos("button6")
 
         pos.next_row()
         key_pos["FN_KEYS"] = pos.get_pos("FN_KEYS")
 
-        pos.skip_x(11.23)
+        pos.skip_x(11.36)
         key_pos["button1"] = pos.get_pos("button1")
         key_pos["button2"] = pos.get_pos("button2")
         key_pos["button3"] = pos.get_pos("button3")
 
         pos.next_row()
-        for legend in LEGEND:
-            key_pos[legend] = pos.get_pos(legend)
+        if show_legend == 1:
+            for legend in LEGEND:
+                key_pos[legend] = pos.get_pos(legend)
 
         return key_pos
 
@@ -425,17 +440,18 @@ class KeyboardPNGFactory:
         else:
             context.show_text("Keybindings")
 
-        context.move_to(move_x, move_y + 20)
-        context.set_font_size(18)
-        if len([i for i in self.modifiers if i]):
-            modifiers = " + ".join(self.modifiers)
-            modifiers = modifiers.replace('mod4', NAME_MAP['mod4'])
-            modifiers = modifiers.replace('mod1', NAME_MAP['mod1'])
-            modifiers = modifiers.replace('shift', NAME_MAP['shift'])
-            modifiers = modifiers.replace('control', NAME_MAP['control'])
-            context.show_text("Modifiers: " + modifiers)
-        else:
-            context.show_text("No modifiers used.")
+        if show_modifiers == 1:
+            context.move_to(move_x, move_y + 20)
+            context.set_font_size(18)
+            if len([i for i in self.modifiers if i]):
+                modifiers = " + ".join(self.modifiers)
+                modifiers = modifiers.replace('mod4', NAME_MAP['mod4'])
+                modifiers = modifiers.replace('mod1', NAME_MAP['mod1'])
+                modifiers = modifiers.replace('shift', NAME_MAP['shift'])
+                modifiers = modifiers.replace('control', NAME_MAP['control'])
+                context.show_text("Modifiers: " + modifiers)
+            else:
+                context.show_text("No modifiers used.")
 
         for i in self.key_pos.values():
             if i.key in ["FN_KEYS"]:
@@ -453,14 +469,14 @@ class KeyboardPNGFactory:
                 x += Pos.GAP + 12 + Pos.WIDTH
 
         # draw mouse base
-        context.rectangle(996, 660, 244, 90)
+        context.rectangle(1006, 660, 244, 90)
         if dark_mode == 1:
             context.set_source_rgb(1, 1, 1)
         else:
             context.set_source_rgb(0, 0, 0)
         context.stroke()
         context.set_font_size(28)
-        context.move_to(1066, 720)
+        context.move_to(1076, 720)
         context.show_text("Mouse")
 
         surface.write_to_png(filename)
@@ -558,15 +574,31 @@ class KeyboardPNGFactory:
         else:
             self.rgb_violet(context)
 
-def get_kb_map(command):
+def get_kb_map(command,input_file):
     import json
     import subprocess
 
-    result = subprocess.run(command.split(" "), capture_output=True, text=True, check=True)
-    bindlist = json.loads(result.stdout)
+    if command:
+        result = subprocess.run(command.split(" "), capture_output=True, text=True, check=True)
+        bindlist = json.loads(result.stdout)
+    else:
+        try:
+            with open(input_file, 'r') as file:
+                bindlist = json.load(file)
+        except FileNotFoundError:
+            print(f"File not found ({input_file})")
+            sys.exit(2)
+        except json.JSONDecodeError as e:
+            print(f"Invalid JSON format: {e}")
+            sys.exit(2)
+        except Exception as e:
+            print(f"Error loading JSON: {e}")
+            sys.exit(2)
+
     kb_map = {}
 
     for binding in bindlist:
+        #print(binding['key'], binding['description'])
         mod = binding['modifiers']
         if mod not in kb_map:
             kb_map[mod] = {}
@@ -574,23 +606,32 @@ def get_kb_map(command):
         key = str(binding['key'].lower())
         if key in KEY_MAP.keys():
             key = KEY_MAP[key]
+        if not "description" in binding.keys():
+            binding['description'] = ""
+        if not "scope" in binding.keys():
+            binding['scope'] = ""
         data = { 'command': binding['description'], 'key': key, 'scope': binding['scope'] }
         kb_map[mod][data['key']] = SimpleNamespace(**data)
 
     return kb_map
 
-
 help_doc = """
-usage: gen-keybinding-img [-h] [-d] [-c COMMAND] [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
+usage: gen-keybinding-img [-h] [-d] [-L] -c COMMAND|-j JSONFILE [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
 
 Keybindings image generator
 
 optional arguments:
-    -h, --help          show this help message and exit
-    -d, --dark          create dark mode images
+    -h, --help                show this help message and exit
+    -d, --dark                create dark mode images
+    -L, --no-legend           do not show Legend
+    -M, --no-modifiers-list   do not show modifiers list
     -c COMMAND, --config COMMAND
                         use specified command to get keybindings
                         output must be in json with the following fields:
+                            key, command, description, modifiers (e.g. "mod4-control-shift"), scope
+    -j JSONFILE, --json-file JSONFILE
+                        use specified json file to get keybindings
+                        file must have the following fields per binding:
                             key, command, description, modifiers (e.g. "mod4-control-shift"), scope
     -o OUTPUT_DIR, --output-dir OUTPUT_DIR
                         set directory to export all images to
@@ -601,12 +642,15 @@ optional arguments:
 """
 if __name__ == "__main__":
     keys_command = None
+    keys_file = None
     output_dir = ""
     logo_img = ""
     app_title = ""
     dark_mode = 0
+    show_legend = 1
+    show_modifiers = 1
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdc:o:l:t:", ["help=", "dark=", "command=", "output-dir=", "logo=", "title="])
+        opts, args = getopt.getopt(sys.argv[1:], "hdLMc:j:o:l:t:", ["help=", "dark=", "legend=", "modifiers=", "command=", "json-file=", "output-dir=", "logo=", "title="])
 
     except getopt.GetoptError:
         print(help_doc)
@@ -616,10 +660,16 @@ if __name__ == "__main__":
         if opt in ("-h", "--help"):
             print(help_doc)
             sys.exit()
+        elif opt in ("-L", "--no-legend"):
+            show_legend = 0
+        elif opt in ("-M", "--no-modifiers-list"):
+            show_modifiers = 0
         elif opt in ("-d", "--dark"):
             dark_mode = 1
         elif opt in ("-c", "--command"):
             keys_command = arg
+        elif opt in ("-j", "--json-file"):
+            keys_file = arg
         elif opt in ("-o", "--output-dir"):
             output_dir = arg
         elif opt in ("-l", "--logo"):
@@ -627,12 +677,12 @@ if __name__ == "__main__":
         elif opt in ("-t", "--title"):
             app_title = arg
 
-    if not keys_command:
-        print("Error: Command must be specified with -c")
+    if not keys_command and not keys_file:
+        print("Error: Command must be specified with -c OR JSON file must be specified with -j")
         print(help_doc)
         sys.exit(2)
 
-    kb_map = get_kb_map(keys_command)
+    kb_map = get_kb_map(keys_command, keys_file)
     for modifier, keys in kb_map.items():
         if not modifier:
             filename = "no_modifier.png"
