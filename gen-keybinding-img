@@ -8,6 +8,7 @@
 import getopt
 import os
 import sys
+from PIL import Image
 
 import cairocffi as cairo
 from cairocffi import ImageSurface
@@ -162,11 +163,11 @@ class KeyboardPNGFactory:
             sys.exit(1)
 
         context.save()
-        context.scale(0.5)
         logo = ImageSurface.create_from_png(logo_img)
-        context.set_source_surface(logo, 20, 50)
+        context.set_source_surface(logo, 20, 25)
         context.paint()
         context.restore()
+        return logo.get_width(), logo.get_height()
 
     def render(self, filename):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1280, 800)
@@ -176,10 +177,11 @@ class KeyboardPNGFactory:
             context.paint()
 
         move_x = 16
-        move_y = 80
+        move_y = 70
         if logo_img:
-            self.add_logo(context)
-            move_x += 194
+            img_w, img_h = self.add_logo(context)
+            move_x += img_w + 10
+            move_y += 0  # img_h / 10
 
         context.move_to(move_x, move_y)
         context.set_font_size(28)
