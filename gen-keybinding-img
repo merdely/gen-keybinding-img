@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 #######################################
-#  Qtile keybindings image generator  #
+#     Keybindings image generator     #
+# Fork of Qtile's gen-keybinding-img  #
 #######################################
 
 import getopt
@@ -182,7 +183,10 @@ class KeyboardPNGFactory:
 
         context.move_to(move_x, move_y)
         context.set_font_size(28)
-        context.show_text("Keybindings for Qtile")
+        if app_title:
+            context.show_text(f"Keybindings for {app_title}")
+        else:
+            context.show_text("Keybindings")
 
         context.move_to(move_x, move_y + 20)
         context.set_font_size(18)
@@ -410,9 +414,9 @@ def get_kb_map(config_path=None):
 
 
 help_doc = """
-usage: gen-keybinding-img [-h] [-c CONFIGFILE] [-o OUTPUT_DIR] [-l LOGO_FILE]
+usage: gen-keybinding-img [-h] [-c CONFIGFILE] [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
 
-Qtile keybindings image generator
+Keybindings image generator
 
 optional arguments:
     -h, --help          show this help message and exit
@@ -423,13 +427,16 @@ optional arguments:
                         set directory to export all images to
     -l LOGO_FILE, --logo LOGO_FILE
                         set logo file to use
+    -t APP_TITLE, --title APP_TITLE
+                        set application title for keybindings
 """
 if __name__ == "__main__":
     config_path = None
     output_dir = ""
     logo_img = ""
+    app_title = ""
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hc:o:l:", ["help=", "config=", "output-dir=", "logo="])
+        opts, args = getopt.getopt(sys.argv[1:], "hc:o:l:t:", ["help=", "config=", "output-dir=", "logo=", "title="])
 
     except getopt.GetoptError:
         print(help_doc)
@@ -445,6 +452,8 @@ if __name__ == "__main__":
             output_dir = arg
         elif opt in ("-l", "--logo"):
             logo_img = arg
+        elif opt in ("-t", "--title"):
+            app_title = arg
 
     kb_map = get_kb_map(config_path)
     for modifier, keys in kb_map.items():
