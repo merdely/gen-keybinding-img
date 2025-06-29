@@ -6,6 +6,7 @@
 #######################################
 
 import getopt
+import json
 import os
 import sys
 from PIL import Image
@@ -552,6 +553,12 @@ class KeyboardPNGFactory:
         key_text = key
         if key_text.lower() in NAME_MAP.keys():
             key_text = NAME_MAP[key_text.lower()]
+        try:
+            if legend_map and key_text in legend_map.keys():
+                key_text = legend_map[key_text]
+        except:
+            print(f"Error: Invalid Legend Map ({legend_map})")
+            sys.exit(2)
         context.show_text(key_text)
 
     def show_multiline(self, context, x, y, key):
@@ -598,7 +605,6 @@ class KeyboardPNGFactory:
             self.rgb_violet(context)
 
 def get_kb_map(command,input_file):
-    import json
     import subprocess
 
     if command:
@@ -640,7 +646,7 @@ def get_kb_map(command,input_file):
 
 help_doc = """
 usage: gen-keybinding-img [-h] [-d] [-L] [-M] -c COMMAND|-j JSONFILE
-                             [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
+                             [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE] [-k LEGEND_MAP]
 
 Keybindings image generator
 
@@ -663,6 +669,8 @@ optional arguments:
                               set logo file to use
     -t APP_TITLE, --title APP_TITLE
                               set application title for keybindings
+    -k LEGEND_MAP, --legend-map LEGEND_MAP
+                              a dict mapping legend labels to new names
 """
 if __name__ == "__main__":
     keys_command = None
@@ -673,8 +681,9 @@ if __name__ == "__main__":
     dark_mode = 0
     show_legend = 1
     show_modifiers = 1
+    legend_map = None
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdLMc:j:o:l:t:k:", ["help=", "dark=", "legend=", "modifiers=", "command=", "json-file=", "output-dir=", "logo=", "title="])
+        opts, args = getopt.getopt(sys.argv[1:], "hdLMc:j:o:l:t:k:", ["help=", "dark=", "legend=", "modifiers=", "legend-map=", "command=", "json-file=", "output-dir=", "logo=", "title="])
 
     except getopt.GetoptError:
         print(help_doc)
@@ -700,6 +709,12 @@ if __name__ == "__main__":
             logo_img = arg
         elif opt in ("-t", "--title"):
             app_title = arg
+        elif opt in ("-k", "--legend-map"):
+            try:
+                legend_map = json.loads(arg)
+            except:
+                print(f"Error: Invalid Legend Map ({legend_map})")
+                sys.exit(2)
 
     if not keys_command and not keys_file:
         print("Error: Command must be specified with -c OR JSON file must be specified with -j")
