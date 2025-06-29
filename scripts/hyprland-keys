@@ -30,15 +30,16 @@ binds = json.loads(result.stdout)
 keybindings = []
 for bind in binds:
     scope = "other"
-    if "monitor" in bind['dispatcher']:
-        scope = "monitor"
-    elif "workspace" in bind['dispatcher']:
+    dispatch = bind['dispatcher']
+    if "monitor" in dispatch and dispatch != "focusworkspaceoncurrentmonitor":
+        scope = "screen"
+    elif "workspace" in dispatch:
         scope = "workspace"
-    elif "window" in bind['dispatcher'] or "togglesplit" in bind['dispatcher'] or "togglefloating" in bind['dispatcher'] or "killactive" in bind['dispatcher'] or "fullscreen" in bind['dispatcher'] or (bind['dispatcher'] == "mouse" and "window" in bind['arg']):
+    elif "window" in dispatch or "movefocus" in dispatch or "cyclenext" in dispatch or "togglesplit" in dispatch or "togglefloating" in dispatch or "killactive" in dispatch or "fullscreen" in dispatch or (dispatch == "mouse" and "window" in bind['arg']):
         scope = "window"
-    elif "cyclenext" in bind['dispatcher'] or "movefocus" in bind['dispatcher'] or "pseudo" in bind['dispatcher']:
+    elif "pseudo" in dispatch:
         scope = "layout"
-    elif bind['dispatcher'] == "exec":
+    elif dispatch == "exec":
         scope = "other"
     if re.match(r'^[A-Z]$', bind['key']):
         bind['key'] = bind['key'].lower()
@@ -50,7 +51,7 @@ for bind in binds:
         bind['key'] = "Button3"
     keybindings.append({
         'key': str(bind['key']),
-        'command': f"{bind['dispatcher']} {bind['arg']}" if bind['arg'] else bind['dispatcher'],
+        'command': f"{dispatch} {bind['arg']}" if bind['arg'] else dispatch,
         'description': bind['description'],
         'modifiers': modmasks[bind['modmask']],
         'scope': scope
