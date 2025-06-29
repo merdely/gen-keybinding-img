@@ -1,0 +1,146 @@
+[
+  {
+    "key": "T",
+    "description": "Theater Mode",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "I",
+    "description": "Miniplayer and go back",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "F",
+    "description": "Full Screen",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "C",
+    "description": "Captions",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "Left",
+    "description": "Go Back 5 seconds",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "J",
+    "description": "Go back 10 seconds",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "K",
+    "description": "Pause",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "L",
+    "description": "Go forward 10 seconds",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "Right",
+    "description": "Go forward 5 seconds",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "Up",
+    "description": "Volume up",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "Down",
+    "description": "Volume Down",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "N",
+    "description": "Next Video",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "M",
+    "description": "Mute",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "0",
+    "description": "Go to 0% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "1",
+    "description": "Go to 10% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "2",
+    "description": "Go to 20% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "3",
+    "description": "Go to 30% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "4",
+    "description": "Go to 40% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "5",
+    "description": "Go to 50% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "6",
+    "description": "Go to 60% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "7",
+    "description": "Go to 70% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "8",
+    "description": "Go to 80% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "9",
+    "description": "Go to 90% mark",
+    "modifiers": "",
+    "scope": ""
+  },
+  {
+    "key": "End",
+    "description": "Go to the End",
+    "modifiers": "",
+    "scope": ""
+  }
+]
