@@ -357,7 +357,6 @@ class KeyboardPNGFactory:
         pos.next_row()
 
         key_pos["capslock"] = pos.get_pos("capslock")
-        #pos.skip_x(1.6)
         for c in "asdfghjkl;'":
             key_pos[c] = pos.get_pos(c)
         key_pos["return"] = pos.get_pos("return")
@@ -387,9 +386,6 @@ class KeyboardPNGFactory:
         key_pos["insert"] = pos.get_pos("insert")
         key_pos["home"] = pos.get_pos("home")
         key_pos["pgup"] = pos.get_pos("pgup")
-        #key_pos["button4"] = pos.get_pos("button4")
-        #key_pos["button5"] = pos.get_pos("button5")
-        #key_pos["button6"] = pos.get_pos("button6")
 
         pos.next_row()
         if [i for i in keys.values() if i.key[:4] == "xf86"]:
@@ -397,8 +393,6 @@ class KeyboardPNGFactory:
             pos.skip_x(11.36)
         else:
             pos.skip_x(12.58)
-        #key_pos["FN_KEYS"] = pos.get_pos("FN_KEYS")
-        #pos.skip_x(11.36)
         key_pos["delete"] = pos.get_pos("delete")
         key_pos["end"] = pos.get_pos("end")
         key_pos["pgdn"] = pos.get_pos("pgdn")
@@ -640,7 +634,6 @@ def get_kb_map(command,input_file):
     kb_map = {}
 
     for binding in bindlist:
-        #print(binding['key'], binding['description'])
         mod = binding['modifiers']
         if mod not in kb_map:
             kb_map[mod] = {}
