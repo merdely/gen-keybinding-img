@@ -17,3 +17,13 @@ using virtually any tool to create images for the keybindings of an app.
 
 Download the gen-keybinding-img script and run: ./gen-keybinding-img -h
 
+## Screenshots
+
+### Hyprland
+
+![Hyprland image for Super key](/assets/Hyprland-Super.png)
+
+### Qtile
+
+![Hyprland image for Super + Control keys](/assets/Qtile-Super-Control.png)
+
