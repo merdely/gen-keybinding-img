@@ -419,16 +419,29 @@ class KeyboardPNGFactory:
         return key_pos
 
     def add_logo(self, context):
+        max_height = 100
+        x = 20
+        y = 25
         if not os.path.exists(logo_img):
             print(f"Error: Logo file '{logo_img}' does not exist.")
             sys.exit(1)
 
         context.save()
         logo = ImageSurface.create_from_png(logo_img)
-        context.set_source_surface(logo, 20, 25)
+        h = logo.get_height()
+        if h > max_height:
+            scale_factor = max_height / h
+        else:
+            scale_factor = 1.0
+            if h < max_height:
+                y += (max_height - h) / 2
+
+        context.scale(scale_factor, scale_factor)
+        context.set_source_surface(logo, x, y)
         context.paint()
         context.restore()
-        return logo.get_width(), logo.get_height()
+
+        return logo.get_width() * scale_factor, logo.get_height() * scale_factor
 
     def render(self, filename):
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, 1280, 800)
