@@ -29,6 +29,8 @@ binds = json.loads(result.stdout)
 
 keybindings = []
 for bind in binds:
+    if not bind['description']:
+        continue
     scope = "other"
     dispatch = bind['dispatcher']
     if "monitor" in dispatch and dispatch != "focusworkspaceoncurrentmonitor":
