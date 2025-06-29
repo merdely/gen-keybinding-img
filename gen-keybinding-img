@@ -460,7 +460,7 @@ class KeyboardPNGFactory:
 
         move_x = 25
         if show_modifiers == 1:
-            move_y = 70
+            move_y = 75
         else:
             move_y = 85
         if logo_img:
