@@ -460,7 +460,7 @@ class KeyboardPNGFactory:
             self.draw_button(context, i.key, i.x, i.y, i.width, i.height)
 
         # draw functional
-        fn = [i for i in keys.values() if i.key[:4] == "XF86"]
+        fn = [i for i in keys.values() if i.key[:4] == "xf86"]
         if len(fn):
             fn_pos = self.key_pos["FN_KEYS"]
             x = fn_pos.x
@@ -483,7 +483,7 @@ class KeyboardPNGFactory:
 
     def draw_button(self, context, key, x, y, width, height):
         fn = False
-        if key[:4] == "XF86":
+        if key[:4] == "xf86":
             fn = True
 
         if key in LEGEND:
