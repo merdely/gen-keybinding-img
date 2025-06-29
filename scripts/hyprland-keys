@@ -33,15 +33,15 @@ for bind in binds:
         continue
     scope = "other"
     dispatch = bind['dispatcher']
-    if "monitor" in dispatch and dispatch != "focusworkspaceoncurrentmonitor":
+    if "monitor" in dispatch and not re.match(r'.*(focusworkspaceoncurrentmonitor).*', dispatch):
         scope = "screen"
-    elif "workspace" in dispatch:
-        scope = "workspace"
-    elif "window" in dispatch or "movefocus" in dispatch or "cyclenext" in dispatch or "togglesplit" in dispatch or "togglefloating" in dispatch or "killactive" in dispatch or "fullscreen" in dispatch or (dispatch == "mouse" and "window" in bind['arg']):
+    elif re.match(r'.*(workspace).*', dispatch) and not re.match(r'.*(movetoworkspace|togglespecialworkspace).*', dispatch):
+        scope = "group"
+    elif re.match(r'.*(window|movefocus|cyclenext|togglesplit|togglefloating|killactive|fullscreen|resizeactive|movetoworkspace).*', dispatch) or (dispatch == "mouse" and "window" in bind['arg']):
         scope = "window"
-    elif "pseudo" in dispatch:
+    elif re.match(r'.*(pseudo).*', dispatch):
         scope = "layout"
-    elif dispatch == "exec":
+    elif re.match(r'.*(exec|togglespecialworkspace).*', dispatch):
         scope = "other"
     if re.match(r'^[A-Z]$', bind['key']):
         bind['key'] = bind['key'].lower()
