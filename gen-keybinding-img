@@ -29,10 +29,11 @@ LEGEND = ["Modifiers", "Layout", "Screen", "Group", "Window", "Other"]
 CUSTOM_KEYS = {
     "backspace": 2,
     "tab": 1.5,
+    "capslock": 1.61,
     "\\": 1.5,
     "return": 2.45,
     "shift": 2,
-    "space": 3,
+    "space": 6,
     "Modifiers": 1.1,
     "FN_KEYS": 1.15,
 }
@@ -56,12 +57,16 @@ KEY_MAP = {
 NAME_MAP = {
     "tab": "Tab",
     "backspace": "Backspace",
+    "capslock": "Caps Lock",
     "return": "Return",
     "shift": "Shift",
     "control": "Control",
     "space": "Space",
     "print": "Print",
+    "scroll": "Scroll",
+    "pause": "Pause",
     "delete": "Del",
+    "insert": "Ins",
     "home": "Home",
     "end": "End",
     "pgup": "PgUp",
@@ -350,7 +355,8 @@ class KeyboardPNGFactory:
             key_pos[c] = pos.get_pos(c)
         pos.next_row()
 
-        pos.skip_x(1.6)
+        key_pos["capslock"] = pos.get_pos("capslock")
+        #pos.skip_x(1.6)
         for c in "asdfghjkl;'":
             key_pos[c] = pos.get_pos(c)
         key_pos["return"] = pos.get_pos("return")
@@ -368,34 +374,46 @@ class KeyboardPNGFactory:
         key_pos["mod1"] = pos.get_pos("mod1")
         key_pos["space"] = pos.get_pos("space")
         key_pos["print"] = pos.get_pos("print")
-        key_pos["delete"] = pos.get_pos("delete")
-        key_pos["home"] = pos.get_pos("home")
-        key_pos["end"] = pos.get_pos("end")
-        key_pos["pgup"] = pos.get_pos("pgup")
-        key_pos["pgdn"] = pos.get_pos("pgdn")
-        #pos.skip_x(1)
+        key_pos["scroll"] = pos.get_pos("scroll")
+        key_pos["pause"] = pos.get_pos("pause")
+        pos.skip_x(0.13)
         key_pos["left"] = pos.get_pos("left")
         key_pos["down"] = pos.get_pos("down")
         key_pos["right"] = pos.get_pos("right")
 
         pos.next_row()
-        #pos.skip_x(12.58)
+        pos.skip_x(12.58)
+        key_pos["insert"] = pos.get_pos("insert")
+        key_pos["home"] = pos.get_pos("home")
+        key_pos["pgup"] = pos.get_pos("pgup")
         #key_pos["button4"] = pos.get_pos("button4")
         #key_pos["button5"] = pos.get_pos("button5")
         #key_pos["button6"] = pos.get_pos("button6")
 
         pos.next_row()
-        key_pos["FN_KEYS"] = pos.get_pos("FN_KEYS")
+        if [i for i in keys.values() if i.key[:4] == "xf86"]:
+            key_pos["FN_KEYS"] = pos.get_pos("FN_KEYS")
+            pos.skip_x(11.36)
+        else:
+            pos.skip_x(12.58)
+        #key_pos["FN_KEYS"] = pos.get_pos("FN_KEYS")
+        #pos.skip_x(11.36)
+        key_pos["delete"] = pos.get_pos("delete")
+        key_pos["end"] = pos.get_pos("end")
+        key_pos["pgdn"] = pos.get_pos("pgdn")
 
-        pos.skip_x(11.36)
+        pos.next_row()
+        if show_legend == 1:
+            if show_legend == 1:
+                for legend in LEGEND:
+                    key_pos[legend] = pos.get_pos(legend)
+            pos.skip_x(6.09)
+        else:
+            pos.skip_x(12.58)
         key_pos["button1"] = pos.get_pos("button1")
         key_pos["button2"] = pos.get_pos("button2")
         key_pos["button3"] = pos.get_pos("button3")
 
-        pos.next_row()
-        if show_legend == 1:
-            for legend in LEGEND:
-                key_pos[legend] = pos.get_pos(legend)
 
         return key_pos
 
@@ -426,12 +444,15 @@ class KeyboardPNGFactory:
         else:
             context.set_source_rgb(0, 0, 0)
 
-        move_x = 16
-        move_y = 70
+        move_x = 25
+        if show_modifiers == 1:
+            move_y = 70
+        else:
+            move_y = 85
         if logo_img:
-            img_w, img_h = self.add_logo(context)
+            img_w, _ = self.add_logo(context)
             move_x += img_w + 10
-            move_y += 0  # img_h / 10
+            move_y += 0
 
         context.move_to(move_x, move_y)
         context.set_font_size(28)
@@ -469,14 +490,14 @@ class KeyboardPNGFactory:
                 x += Pos.GAP + 12 + Pos.WIDTH
 
         # draw mouse base
-        context.rectangle(1006, 660, 244, 90)
+        context.rectangle(1006, 735, 244, 40)
         if dark_mode == 1:
             context.set_source_rgb(1, 1, 1)
         else:
             context.set_source_rgb(0, 0, 0)
         context.stroke()
         context.set_font_size(28)
-        context.move_to(1076, 720)
+        context.move_to(1076, 765)
         context.show_text("Mouse")
 
         surface.write_to_png(filename)
@@ -536,6 +557,8 @@ class KeyboardPNGFactory:
     def show_multiline(self, context, x, y, key):
         """Cairo doesn't support multiline. Added with word wrapping."""
         c_width = 14
+        x = x - 5
+        width_padding = 2
         if key.key in CUSTOM_KEYS:
             c_width *= CUSTOM_KEYS[key.key]
 
@@ -550,7 +573,7 @@ class KeyboardPNGFactory:
         printable = last_word = words.pop()
         while len(words):
             last_word = words.pop()
-            if len(printable + " " + last_word) < c_width:
+            if len(printable + " " + last_word) < c_width - width_padding:
                 printable += " " + last_word
                 continue
 
@@ -616,7 +639,8 @@ def get_kb_map(command,input_file):
     return kb_map
 
 help_doc = """
-usage: gen-keybinding-img [-h] [-d] [-L] -c COMMAND|-j JSONFILE [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
+usage: gen-keybinding-img [-h] [-d] [-L] [-M] -c COMMAND|-j JSONFILE
+                             [-o OUTPUT_DIR] [-l LOGO_FILE] [-t TITLE]
 
 Keybindings image generator
 
@@ -626,19 +650,19 @@ optional arguments:
     -L, --no-legend           do not show Legend
     -M, --no-modifiers-list   do not show modifiers list
     -c COMMAND, --config COMMAND
-                        use specified command to get keybindings
-                        output must be in json with the following fields:
-                            key, command, description, modifiers (e.g. "mod4-control-shift"), scope
+                              use specified command to get keybindings
+                              output must be in json with the following fields:
+                                  key, command, description, modifiers (e.g. "mod4-control-shift"), scope
     -j JSONFILE, --json-file JSONFILE
-                        use specified json file to get keybindings
-                        file must have the following fields per binding:
-                            key, command, description, modifiers (e.g. "mod4-control-shift"), scope
+                              use specified json file to get keybindings
+                              file must have the following fields per binding:
+                                  key, command, description, modifiers (e.g. "mod4-control-shift"), scope
     -o OUTPUT_DIR, --output-dir OUTPUT_DIR
-                        set directory to export all images to
+                              set directory to export all images to
     -l LOGO_FILE, --logo LOGO_FILE
-                        set logo file to use
+                              set logo file to use
     -t APP_TITLE, --title APP_TITLE
-                        set application title for keybindings
+                              set application title for keybindings
 """
 if __name__ == "__main__":
     keys_command = None
@@ -650,7 +674,7 @@ if __name__ == "__main__":
     show_legend = 1
     show_modifiers = 1
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdLMc:j:o:l:t:", ["help=", "dark=", "legend=", "modifiers=", "command=", "json-file=", "output-dir=", "logo=", "title="])
+        opts, args = getopt.getopt(sys.argv[1:], "hdLMc:j:o:l:t:k:", ["help=", "dark=", "legend=", "modifiers=", "command=", "json-file=", "output-dir=", "logo=", "title="])
 
     except getopt.GetoptError:
         print(help_doc)
