@@ -25,5 +25,8 @@ Download the gen-keybinding-img script and run: ./gen-keybinding-img -h
 
 ### Qtile
 
-![Hyprland image for Super + Control keys](/assets/Qtile-Super-Control.png)
+![Qtile image for Super + Control keys](/assets/Qtile-Super-Control.png)
 
+### Youtube
+
+![Youtube image for shortcut keys](/assets/youtube.png)
