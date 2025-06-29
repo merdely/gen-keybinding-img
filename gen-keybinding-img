@@ -399,9 +399,8 @@ class KeyboardPNGFactory:
 
         pos.next_row()
         if show_legend == 1:
-            if show_legend == 1:
-                for legend in LEGEND:
-                    key_pos[legend] = pos.get_pos(legend)
+            for legend in LEGEND:
+                key_pos[legend] = pos.get_pos(legend)
             pos.skip_x(6.09)
         else:
             pos.skip_x(12.58)
@@ -460,7 +459,6 @@ class KeyboardPNGFactory:
         if logo_img:
             img_w, _ = self.add_logo(context)
             move_x += img_w + 10
-            move_y += 0
 
         context.move_to(move_x, move_y)
         context.set_font_size(28)
