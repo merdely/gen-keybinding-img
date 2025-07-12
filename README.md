@@ -15,7 +15,8 @@ using virtually any tool to create images for the keybindings of an app.
 
 ## Install
 
-Download the gen-keybinding-img script and run: ./gen-keybinding-img -h
+* Install python-pillow python-cairocffi
+* Download the gen-keybinding-img script and run: ./gen-keybinding-img -h
 
 ## Screenshots
 
