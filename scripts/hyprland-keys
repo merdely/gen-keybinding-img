@@ -33,7 +33,7 @@ for bind in binds:
         continue
     scope = "other"
     dispatch = bind['dispatcher']
-    if "monitor" in dispatch and not re.match(r'.*(focusworkspaceoncurrentmonitor).*', dispatch):
+    if "monitor" in dispatch and not re.match(r'.*(focusworkspaceoncurrentmonitor|movecurrentworkspacetomonitor).*', dispatch):
         scope = "screen"
     elif re.match(r'.*(workspace).*', dispatch) and not re.match(r'.*(movetoworkspace|togglespecialworkspace).*', dispatch):
         scope = "group"
@@ -52,9 +52,9 @@ for bind in binds:
     elif bind['key'] == "mouse:273":
         bind['key'] = "Button3"
     keybindings.append({
-        'key': str(bind['key']),
+        'key': str(bind['key']).replace("Page_Up", "PgUp").replace("Page_Down", "PgDn"),
         'command': f"{dispatch} {bind['arg']}" if bind['arg'] else dispatch,
-        'description': bind['description'],
+        'description': re.sub(r'^\[[^]]+\] ', '', bind['description']),
         'modifiers': modmasks[bind['modmask']],
         'scope': scope
     })

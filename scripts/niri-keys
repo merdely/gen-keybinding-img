@@ -1,0 +1,167 @@
+#!/bin/sh
+
+declare -A modvalues
+modvalues[Shift]=1
+modvalues[Control]=4
+modvalues[Alt]=8
+modvalues[Super]=64
+
+declare -a modmask
+modmasks[0]=""
+modmasks[1]="shift"
+modmasks[4]="control"
+modmasks[5]="control-shift"
+modmasks[8]="mod1"
+modmasks[9]="mod1-shift"
+modmasks[12]="control-mod1"
+modmasks[13]="control-mod1-shift"
+modmasks[64]="mod4"
+modmasks[65]="mod4-shift"
+modmasks[68]="mod4-control"
+modmasks[69]="mod4-control-shift"
+modmasks[72]="mod4-mod1"
+modmasks[73]="mod4-mod1-shift"
+modmasks[76]="mod4-control-mod1"
+modmasks[77]="mod4-control-mod1-shift"
+
+unset printed
+OIFS=$IFS
+IFS=$(printf "\n\b")
+binds=0
+subsection=0
+unset key_combo
+for line in $(cat $HOME/.config/niri/config.kdl); do
+  unset mike
+  if [ -z "$key_combo" ]; then
+    [ $binds = 0 ] && [[ ! $line =~ ^"binds {" ]] && continue
+    binds=1
+    if [[ $line =~ ^[[:space:]]*} ]]; then
+      if [ $subsection != 0 ]; then
+        subsection=$((subsection-1))
+        continue
+      else
+        break
+      fi
+    fi
+    if [ $line = "" ] || [[ $line =~ ^"binds {" ]] || [[ $line =~ ^[[:space:]]*// ]]; then
+      continue
+    fi
+
+    #echo $line
+    [[ $line =~ ^[[:space:]] ]] && line="${line#"${line%%[![:space:]]*}"}"
+    key_combo=${line%% *}
+
+    line=${line#* }
+    line="${line#"${line%%[![:space:]]*}"}"
+
+    cooldown=0
+    locked=0
+    repeat=1
+    inhibit=1
+    # This isn't working... think of something else
+    while [[ ! $line =~ ^\{ ]] && [[ ! $line =~ ^} ]] ; do
+
+      if [[ $line =~ ^hotkey-overlay-title= ]]; then
+        description=$(echo $line | awk -F'"' '{print $2}')
+        line=$(echo $line | sed -r 's/^hotkey-overlay-title="[^"]*"[[:space:]]+//')
+      elif [[ $line =~ ^allow-when-locked=true ]]; then
+        locked=1
+        line=${line#* }
+      elif [[ $line =~ ^repeat=false ]]; then
+        repeat=0
+        line=${line#* }
+      elif [[ $line =~ ^allow-inhibiting=false ]]; then
+        inhibit=0
+        line=${line#* }
+      elif [[ $line =~ ^cooldown-ms= ]]; then
+        cooldown=$(echo $line | awk -F '[[:space:]=]' '{print $2}')
+        line=${line#* }
+      else
+        line=${line#* }
+      fi
+      #line="${line#"${line%%[![:space:]]*}"}"
+    done
+
+    if [[ $line =~ \{[[:space:]]*(//)*[[:space:]]*$ ]]; then
+      subsection=$((subsection+1))
+      mike=1
+      continue
+    else
+      cmd=$(echo $line | awk -F '[{}]' '{print $2}')
+      cmd="${cmd#"${cmd%%[![:space:]]*}"}"
+      cmd="${cmd%"${cmd##*[![:space:]]}"}"
+      cmd=${cmd%;}
+      [ -z "$description" ] && description=$cmd
+    fi
+  else
+    cmd="${line#"${line%%[![:space:]]*}"}"
+  fi
+
+  [ -n "$mike" ] && echo $mike
+  unset mike
+
+  ## Add code to process keys from sway-i3 script
+  OIFS=$IFS
+  IFS=+
+  modmask=0
+  for key in $key_combo; do
+    case $key in
+      Shift|shift)
+        modmask=$((modmask+1))
+        ;;
+      Control|control|Ctrl|ctrl)
+        modmask=$((modmask+4))
+        ;;
+      Alt|alt|Mod1|mod1)
+        modmask=$((modmask+8))
+        ;;
+      Super|super|Mod4|mod4|Mod|mod)
+        modmask=$((modmask+64))
+        ;;
+      *)
+        keybinding=$key
+        ;;
+    esac
+  done
+  IFS=$OIFS
+
+  case $description in
+    *[Mm]ove[" "-][Ww]indow*|*[Mm]ove[" "-][Cc]olumn*|*"Focus Next Column"*|*"Focus Previous Column"*)
+      scope=window
+      ;;
+    *Move[" "-]WS*|*Move[" "-][Ww]orkspace*)
+      scope=group
+      ;;
+    *[Ll]ayout*|*[Ff]ullscreen*|*[Ff]loating*|*[Ss]plit*|*focus" "mode*|*Focus*Float/Tile)
+      scope=layout
+      ;;
+    *[Mm]onitor*|*[Ss]creen*|*[Oo]utput*)
+      scope=screen
+      ;;
+    *[Ww]orkspace*|*WS*|scratchpad" "show*|Show" "[Ss]cratchpad*)
+      scope=group
+      ;;
+    *[Ww]indow*|*[Cc]olumn*|*[Ff]ocus*|kill|move" "scratchpad*|resize*|set-column-width|set-window-width|set-window-height|Resize" "[Ww]indow*|move" "*)
+      scope=window
+      ;;
+    *)
+      scope=other
+      ;;
+  esac
+
+  #echo $keybinding - $modmask - $description - $cmd - $scope
+  keybinding=${keybinding/Page_Up/PgUp}
+  keybinding=${keybinding/Page_Down/PgDn}
+  cmd="${cmd//\\/\\\\}"
+  cmd="${cmd//\"/\\\"}"
+  [ -z "$printed" ] && printf "["
+  printf '%s{ "key": "%s", "command": "%s", "description": "%s", "modifiers": "%s", "scope": "%s" }' \
+    "$printed" "$keybinding" "$cmd" "$description" "${modmasks[$modmask]}" "$scope"
+  printed=", "
+
+  unset key_combo description cmd modmask keybinding scope
+done
+IFS=$OIFS
+
+[ -n "$printed" ] && printf "]\n"
+

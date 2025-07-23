@@ -1,0 +1,139 @@
+#!/bin/bash
+
+# Recommentations:
+#  * Include a line like:
+#    # label Super+1 LABEL FOR KEY
+#    This will be used as a description
+#    There can be a command and or whitespace before the label string, but the
+#    label string must start with "# label Keys LABEL" ("#         # label ...)
+
+declare -A modvalues
+modvalues[Shift]=1
+modvalues[Control]=4
+modvalues[Alt]=8
+modvalues[Super]=64
+
+declare -a modmask
+modmasks[0]=""
+modmasks[1]="shift"
+modmasks[4]="control"
+modmasks[5]="control-shift"
+modmasks[8]="mod1"
+modmasks[9]="mod1-shift"
+modmasks[12]="control-mod1"
+modmasks[13]="control-mod1-shift"
+modmasks[64]="mod4"
+modmasks[65]="mod4-shift"
+modmasks[68]="mod4-control"
+modmasks[69]="mod4-control-shift"
+modmasks[72]="mod4-mod1"
+modmasks[73]="mod4-mod1-shift"
+modmasks[76]="mod4-control-mod1"
+modmasks[77]="mod4-control-mod1-shift"
+
+declare -A cmds
+declare -A labels
+declare -A locked
+declare -A scopes
+declare -A mods
+declare -A keys
+
+OIFS=$IFS
+IFS=$(printf "\n\b")
+
+swayconfig=$HOME/.config/sway/config
+[ ! -r $swayconfig ] && swayconfig=/etc/sway/config
+[ ! -r $swayconfig ] && echo "Error: Cannot find swayconfig" && exit 1
+
+count=0
+for line in $(grep -E "^([#[:space:]]*# label |^[[:space:]]*bindsym )" ~/.config/sway/config | sed 's/^[#[:space:]]*//'); do
+  count=$((count+1))
+  locked=0
+  mode=${line%% *}  # label or bindsym
+  line=${line#* }
+  while [ ${line:0:2} = "--" ]; do
+    case "${line%% *}" in
+      --locked)
+        locked=1
+        line=${line#* }
+        ;;
+    esac
+  done
+  key_combo=${line%% *}
+  OIFS=$IFS
+  IFS=+
+  modmask=0
+  for key in $key_combo; do
+    case $key in
+      Shift|shift)
+        modmask=$((modmask+1))
+        ;;
+      Control|control)
+        modmask=$((modmask+4))
+        ;;
+      Alt|alt|Mod1|mod1)
+        modmask=$((modmask+8))
+        ;;
+      Super|super|Mod4|mod4)
+        modmask=$((modmask+64))
+        ;;
+      *)
+        keybinding=$key
+        ;;
+    esac
+  done
+  IFS=$OIFS
+
+  case ${line#* } in
+    "Move [Ww]indow"*|*"move container"*|*"move window"*)
+      scope=window
+      ;;
+    *"Move WS"*|*"Move [Ww]orkspace"*|*"move workspace"*)
+      scope=group
+      ;;
+    *[Ll]ayout*|*[Ff]ullscreen*|*[Ff]loating*|*[Ss]plit*|*"focus mode"*|*Focus*Float/Tile)
+      scope=layout
+      ;;
+    *[Mm]onitor*|*[Ss]creen*|*[Oo]utput*)
+      scope=screen
+      ;;
+    *[Ww]orkspace*|*WS*|"scratchpad show"*|"Show [Ss]cratchpad"*)
+      scope=group
+      ;;
+    *[Ww]indow*|*[Ff]ocus*|kill|"move scratchpad"*|"resize"*|"Resize [Ww]indow"*|"move "*)
+      scope=window
+      ;;
+    *)
+      scope=other
+      ;;
+  esac
+
+  if [ $mode = bindsym ]; then
+    cmds[$key_combo]=${line#* }
+  else
+    labels[$key_combo]=${line#* }
+  fi
+  scopes[$key_combo]=$scope
+  locked[$key_combo]=$locked
+  mods[$key_combo]=$modmask
+  keys[$key_combo]=$keybinding
+  # echo just set $key == ${labels[$key]}
+done
+
+printed=""
+printf "["
+for key in ${!cmds[@]}; do
+  if [ -z "${labels[$key]}" ]; then
+    desc=${cmds[$key]}
+  else
+    desc=${labels[$key]}
+  fi
+  command="${cmds[$key]//\\/\\\\}"
+  command="${command//\"/\\\"}"
+  keybinding=${keys[$key]/Page_Up/PgUp}
+  keybinding=${keybinding/Page_Down/PgDn}
+  printf '%s{ "key": "%s", "command": "%s", "description": "%s", "modifiers": "%s", "scope": "%s" }' \
+    "$printed" "$keybinding" "$command" "$desc" "${modmasks[${mods[$key]}]}" "${scopes[$key]}"
+  printed=" ,"
+done
+printf "]\n"
