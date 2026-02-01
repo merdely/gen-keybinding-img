@@ -1,5 +1,17 @@
 # Keybindings Image Generator
 
+## Repository Info
+
+- Repository home: https://git.erdelynet.com/mike/gen-keybinding-img
+- Github Mirror: https://github.com/merdely/gen-keybinding-img
+
+## Issues / Pull Requests
+
+Issues and other interactions should take place in the Github Mirror
+
+- https://github.com/merdely/gen-keybinding-img/issues
+- https://github.com/merdely/gen-keybinding-img/pulls
+
 ## Background
 
 This script helps create a Keybindings Image on a keyboard with bindings for
