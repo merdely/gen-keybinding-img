@@ -149,11 +149,19 @@ for line in $(cat $HOME/.config/niri/config.kdl); do
       ;;
   esac
 
-  #echo $keybinding - $modmask - $description - $cmd - $scope
+  if [ "$cmd" = 'spawn "true"' ]; then
+    #echo removing cmd=$cmd>/dev/stderr
+    unset key_combo description cmd modmask keybinding scope
+    continue
+  fi
+  #echo "cmd='$cmd'" > /dev/stderr
+  #echo $keybinding - $modmask - $description - $cmd - $scope > /dev/stderr
   keybinding=${keybinding/Page_Up/PgUp}
   keybinding=${keybinding/Page_Down/PgDn}
   cmd="${cmd//\\/\\\\}"
   cmd="${cmd//\"/\\\"}"
+  description="${description//\\/\\\\}"
+  description="${description//\"/\\\"}"
   [ -z "$printed" ] && printf "["
   printf '%s{ "key": "%s", "command": "%s", "description": "%s", "modifiers": "%s", "scope": "%s" }' \
     "$printed" "$keybinding" "$cmd" "$description" "${modmasks[$modmask]}" "$scope"

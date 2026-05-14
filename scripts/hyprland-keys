@@ -3,34 +3,46 @@
 import json
 import re
 import subprocess
+import sys
+
+mode = None
+if len(sys.argv) > 1:
+    if sys.argv[1] in [ "dmenu", "rofi", "wofi", "fuzzel" ]:
+        mode = sys.argv[1]
+    else:
+        print(f"usage: {sys.argv[0]} [-h] dmenu|rofi|wofi|fuzzel")
+        sys.exit(0)
 
 result = subprocess.run(['hyprctl', '--instance', '0', '-j', 'binds'],
                         capture_output=True, text=True, check=True)
 
 modmasks = {
     0: "",
-    1: "shift",
-    4: "control",
-    5: "control-shift",
-    8: "mod1",
-    9: "mod1-shift",
-    12: "control-mod1",
-    13: "control-mod1-shift",
-    64: "mod4",
-    65: "mod4-shift",
-    68: "mod4-control",
-    69: "mod4-control-shift",
-    72: "mod4-mod1",
-    73: "mod4-mod1-shift",
-    76: "mod4-control-mod1",
-    77: "mod4-control-mod1-shift"
+    1: "Shift",
+    4: "Control",
+    5: "Control-Shift",
+    8: "Mod1",
+    9: "Mod1-Shift",
+    12: "Control-Mod1",
+    13: "Control-Mod1-Shift",
+    64: "Mod4",
+    65: "Mod4-Shift",
+    68: "Mod4-Control",
+    69: "Mod4-Control-Shift",
+    72: "Mod4-Mod1",
+    73: "Mod4-Mod1-Shift",
+    76: "Mod4-Control-Mod1",
+    77: "Mod4-Control-Mod1-Shift"
 }
 binds = json.loads(result.stdout)
 
 keybindings = []
 for bind in binds:
     if not bind['description']:
-        continue
+        if bind['dispatcher'] == "exec":
+            bind['description'] = bind['arg']
+        else:
+            bind['description'] = f"{bind['dispatcher']} {bind['arg']}"
     scope = "other"
     dispatch = bind['dispatcher']
     if "monitor" in dispatch and not re.match(r'.*(focusworkspaceoncurrentmonitor|movecurrentworkspacetomonitor).*', dispatch):
@@ -44,18 +56,22 @@ for bind in binds:
     elif re.match(r'.*(exec|togglespecialworkspace).*', dispatch):
         scope = "other"
     if re.match(r'^[A-Z]$', bind['key']):
-        bind['key'] = bind['key'].lower()
+        if not mode:
+            bind['key'] = bind['key'].lower()
     elif bind['key'] == "mouse:272":
         bind['key'] = "Button1"
     elif bind['key'] == "mouse:274":
         bind['key'] = "Button2"
     elif bind['key'] == "mouse:273":
         bind['key'] = "Button3"
+    modifier = modmasks[bind['modmask']]
+    if not mode:
+        modifier = modifier.lower()
     keybindings.append({
         'key': str(bind['key']).replace("Page_Up", "PgUp").replace("Page_Down", "PgDn"),
         'command': f"{dispatch} {bind['arg']}" if bind['arg'] else dispatch,
         'description': re.sub(r'^\[[^]]+\] ', '', bind['description']),
-        'modifiers': modmasks[bind['modmask']],
+        'modifiers': modifier,
         'scope': scope
     })
     #print(bind)
@@ -70,4 +86,11 @@ for bind in binds:
 #      'scope': key.commands[0].selectors[0][0] if len(key.commands[0].selectors) else None,
 #    })
 
-print(json.dumps(keybindings))
+if not mode:
+    print(json.dumps(keybindings))
+else:
+    for bind in keybindings:
+        if bind['modifiers']:
+            print(f"{bind['modifiers'].replace('Mod1','Alt').replace('Mod4','Super')}+{bind['key']}: {bind['description']}")
+        else:
+            print(f"{bind['key']}: {bind['description']}")
