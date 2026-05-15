@@ -61,13 +61,10 @@ parse_keybind() {
   modlist[$keyname]=${modmasks[$modmask]}
 
   # If hotkey-overlay-title is defined, grab it
-  if [[ "$line" == *" hotkey-overlay-title="* ]]; then
+  if [[ "$line" == *" hotkey-overlay-title=\""* ]]; then
     desc=${line#* hotkey-overlay-title=\"}
     desc=${desc%%\"*}
-    desc="${desc//\\/\\\\}"
-    desc="${desc//\"/\\\"}"
   fi
-  desclist[$keyname]=$desc
 
   # The command is the part between { ... }
   cmd=${line##*\{}
@@ -78,6 +75,36 @@ parse_keybind() {
   cmd="${cmd//\\/\\\\}"
   cmd="${cmd//\"/\\\"}"
   cmdlist[$keyname]=$cmd
+
+  local newdesc=() word
+  if [[ -z "$desc" ]]; then
+    if [[ "$cmd" == spawn* ]]; then
+      desc=${cmd#spawn}
+      desc=${desc#-sh}
+      desc=${desc# \\\"}
+      desc=${desc%\\\"}
+    else
+      desc=${cmd//-/ }
+      newdesc=()
+      for word in $desc; do
+        declare -u first
+        first=${word:0:1}
+        newdesc+=("${first}${word:1}")
+      done
+      desc="${newdesc[@]}"
+    fi
+  fi
+
+  desc=${desc#\$HOME/.config/niri/scripts/}
+  desc=${desc/@DEFAULT_AUDIO_SINK@/speakers}
+  desc=${desc/@DEFAULT_AUDIO_SOURCE@/mic}
+  desc=${desc/ or /\/}
+  desc=${desc/ Or /\/}
+  desc=${desc/Workspace/WS}
+  desc=${desc//\\\"/}
+  desc=${desc//\"/}
+  desc=${desc//  / }
+  desclist[$keyname]=$desc
 
   case "$desc" in
     *[Mm]ove[" "-][Ww]indow*|*[Mm]ove[" "-][Cc]olumn*|*"Focus Next Column"*|*"Focus Previous Column"*)
@@ -121,6 +148,7 @@ main() {
       line=${line#"${line%%[! ]*}"}
       line=${line%"${line##*[! ]}"}
 
+      [[ "$line" == *" hotkey-overlay-title=null "* ]] && continue
       # Look for lines that have "binds { ... }"
       [[ "$line" =~ ^binds[[:space:]]+\{.*[^[:space:]]+.*\}$ ]] && parse_keybind "$line" && continue
 
