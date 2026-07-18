@@ -139,7 +139,7 @@ main() {
   declare -A keylist cmdlist desclist modlist scopelist
 
   in_binds=false
-  for file in "${niri_configs[@]}" foo.kdl; do
+  for file in "${niri_configs[@]}"; do
     i=0
     while IFS= read -r line; do
       ((i++))
